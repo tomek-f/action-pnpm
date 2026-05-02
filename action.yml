@@ -1,0 +1,13 @@
+name: PNPM Setup Action
+
+runs:
+    using: 'composite'
+    steps:
+        - run: npm i -g --force corepack && corepack enable
+          shell: bash
+        - uses: actions/setup-node@v6
+          with:
+              node-version: lts/*
+              cache: 'pnpm'
+        - run: HUSKY=0 pnpm i
+          shell: bash

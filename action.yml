@@ -1,13 +1,24 @@
 name: PNPM Setup Action
 
+inputs:
+  NPM_READ_TOKEN:
+    type: string
+  NODE_VERSION:
+    default: lts/*
+    type: string
+
 runs:
-    using: 'composite'
-    steps:
-        - run: npm i -g --force corepack && corepack enable
-          shell: bash
-        - uses: actions/setup-node@v6
-          with:
-              node-version: lts/*
-              cache: 'pnpm'
-        - run: HUSKY=0 pnpm i --frozen-lockfile
-          shell: bash
+  using: composite
+  steps:
+    - run: npm i -g --force corepack && corepack enable
+      shell: bash
+    - uses: actions/setup-node@v7
+      with:
+        node-version: ${{ inputs.NODE_VERSION }}
+        cache: pnpm
+    - name: configure npmAuthToken in pnpm if NPM_READ_TOKEN is provided
+      if: ${{ inputs.NPM_READ_TOKEN != '' }}
+      run: pnpm config set //registry.npmjs.org/:_authToken ${{ inputs.NPM_READ_TOKEN }}
+      shell: bash
+    - run: HUSKY=0 pnpm i --frozen-lockfile
+      shell: bash

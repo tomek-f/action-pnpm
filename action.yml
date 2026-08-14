@@ -4,21 +4,18 @@ inputs:
   NPM_READ_TOKEN:
     type: string
   NODE_VERSION:
-    default: lts/*
+    default: lts
     type: string
 
 runs:
   using: composite
   steps:
-    - run: npm i -g --force corepack && corepack enable
-      shell: bash
-    - uses: actions/setup-node@v7
-      with:
-        node-version: ${{ inputs.NODE_VERSION }}
-        cache: pnpm
-    - name: configure npmAuthToken in pnpm if NPM_READ_TOKEN is provided
+    - name: configure npmAuthToken in ~/.npmrc if NPM_READ_TOKEN is provided
       if: ${{ inputs.NPM_READ_TOKEN != '' }}
-      run: pnpm config set //registry.npmjs.org/:_authToken ${{ inputs.NPM_READ_TOKEN }}
+      run: echo "//registry.npmjs.org/:_authToken=${{ inputs.NPM_READ_TOKEN }}" > ~/.npmrc
       shell: bash
-    - run: HUSKY=0 pnpm i --frozen-lockfile
-      shell: bash
+    - name: Install pnpm and Node.js
+      uses: pnpm/setup@c9883cc79df532ad1a7b81bf9ab944ceb090d65c # v2.0.0
+      with:
+        runtime: node@${{ inputs.NODE_VERSION }}
+        cache: true
